@@ -1,0 +1,30 @@
+name: testacc
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * *'
+
+jobs:
+  acc:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      RABBIT_ENDPOINT: https://dev.api.followrabbit.ai
+      RABBIT_AUDIENCE: 532997547160-v5vbdm0abebklbv1kqt445l3unh15p9s.apps.googleusercontent.com
+      RABBIT_TEST_DOMAIN_ID: demo.io
+      RABBIT_TEST_IMPERSONATE_SA_EMAIL: impersonation@rbt-dev-app-eu.iam.gserviceaccount.com
+      RABBIT_TEST_IMPERSONATE_TARGET_EMAIL: ${{ secrets.RABBIT_TEST_IMPERSONATE_TARGET_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+      - run: make testacc
