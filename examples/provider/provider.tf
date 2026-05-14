@@ -2,7 +2,7 @@ terraform {
   required_providers {
     rabbit = {
       source  = "followrabbit-ai/rabbit"
-      version = "~> 0.1"
+      version = "~> 1.0"
     }
   }
 }

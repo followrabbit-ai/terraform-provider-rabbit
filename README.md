@@ -164,7 +164,7 @@ ok  github.com/followrabbit-ai/terraform-provider-rabbit/internal/provider  ~80s
 ## Release process
 
 1. Make sure `master` is green and `docs/` reflects what's shipping.
-2. Tag with a semver: `git tag v0.x.y && git push origin v0.x.y`.
+2. Tag with a semver: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 3. GitHub Actions runs GoReleaser and publishes the release.
 4. The Terraform Registry picks the new release up automatically once the
    provider is registered there (initial registration is a one-time

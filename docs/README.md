@@ -5,7 +5,7 @@ provider lets you declare Rabbit groups, role bindings, and resource scope in
 Terraform alongside the rest of your cloud infrastructure.
 
 - **Source:** `followrabbit-ai/rabbit` on the Terraform Registry
-- **Status:** v0.x — schema may still evolve; pin a minor version
+- **Status:** v1.x — stable schema; follows semver
 - **License:** MPL-2.0
 
 ---
@@ -35,7 +35,7 @@ terraform {
   required_providers {
     rabbit = {
       source  = "followrabbit-ai/rabbit"
-      version = "~> 0.1"
+      version = "~> 1.0"
     }
   }
 }
@@ -80,7 +80,7 @@ terraform {
   required_providers {
     rabbit = {
       source  = "followrabbit-ai/rabbit"
-      version = "~> 0.1"
+      version = "~> 1.0"
     }
   }
 }
