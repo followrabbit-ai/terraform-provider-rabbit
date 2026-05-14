@@ -133,10 +133,9 @@ func setupOutOfBandGroup(t *testing.T, suffix string, principals []client.Princi
 func TestAccGroupMember_duplicateIsNoop(t *testing.T) {
 	gName := uniqueName("gm-dup")
 	cfg := providerConfigHCL() + fmt.Sprintf(`
-data "rabbit_role" "viewer" { name = "Domain Viewer" }
 resource "rabbit_group" "g" {
   name  = %q
-  roles = [data.rabbit_role.viewer.id]
+  roles = ["roles/domain.viewer"]
   principals = [
     { name = "bob@demo.io", principal_type = "EMAIL" },
   ]
@@ -181,10 +180,9 @@ resource "rabbit_group_member" "dup" {
 func TestAccGroupMember_import(t *testing.T) {
 	gName := uniqueName("gm-import")
 	cfg := providerConfigHCL() + fmt.Sprintf(`
-data "rabbit_role" "viewer" { name = "Domain Viewer" }
 resource "rabbit_group" "g" {
   name  = %q
-  roles = [data.rabbit_role.viewer.id]
+  roles = ["roles/domain.viewer"]
   principals = [{ name = "alice@demo.io", principal_type = "EMAIL" }]
 }
 resource "rabbit_group_member" "m" {

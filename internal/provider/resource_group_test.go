@@ -17,12 +17,9 @@ import (
 func TestAccGroup_basic(t *testing.T) {
 	name := uniqueName("basic")
 	cfg := providerConfigHCL() + fmt.Sprintf(`
-data "rabbit_role" "viewer" {
-  name = "Domain Viewer"
-}
 resource "rabbit_group" "g" {
   name  = %q
-  roles = [data.rabbit_role.viewer.id]
+  roles = ["roles/domain.viewer"]
   scope = {
     folders  = []
     projects = []
@@ -63,12 +60,9 @@ func TestAccGroup_updateNameAndPrincipals(t *testing.T) {
 	nameB := uniqueName("upd-B")
 	tpl := func(n, princ string) string {
 		return providerConfigHCL() + fmt.Sprintf(`
-data "rabbit_role" "viewer" {
-  name = "Domain Viewer"
-}
 resource "rabbit_group" "g" {
   name  = %q
-  roles = [data.rabbit_role.viewer.id]
+  roles = ["roles/domain.viewer"]
   principals = %s
 }
 `, n, princ)
@@ -144,10 +138,9 @@ func TestAccGroup_principalTypes(t *testing.T) {
 		t.Run(tc.typ, func(t *testing.T) {
 			gName := uniqueName("ptype-" + tc.typ)
 			cfg := providerConfigHCL() + fmt.Sprintf(`
-data "rabbit_role" "viewer" { name = "Domain Viewer" }
 resource "rabbit_group" "g" {
   name  = %q
-  roles = [data.rabbit_role.viewer.id]
+  roles = ["roles/domain.viewer"]
   principals = [
     { name = %q, principal_type = %q },
   ]
@@ -171,10 +164,9 @@ resource "rabbit_group" "g" {
 func TestAccGroup_import(t *testing.T) {
 	name := uniqueName("import")
 	cfg := providerConfigHCL() + fmt.Sprintf(`
-data "rabbit_role" "viewer" { name = "Domain Viewer" }
 resource "rabbit_group" "g" {
   name  = %q
-  roles = [data.rabbit_role.viewer.id]
+  roles = ["roles/domain.viewer"]
   principals = [{ name = "alice@demo.io", principal_type = "EMAIL" }]
 }
 `, name)
@@ -209,10 +201,9 @@ func importIDForGroup(addr string) resource.ImportStateIdFunc {
 func TestAccGroup_disappears(t *testing.T) {
 	name := uniqueName("disappear")
 	cfg := providerConfigHCL() + fmt.Sprintf(`
-data "rabbit_role" "viewer" { name = "Domain Viewer" }
 resource "rabbit_group" "g" {
   name  = %q
-  roles = [data.rabbit_role.viewer.id]
+  roles = ["roles/domain.viewer"]
   principals = [{ name = "alice@demo.io", principal_type = "EMAIL" }]
 }
 `, name)
@@ -262,10 +253,9 @@ resource "rabbit_group" "g" {
 func TestAccGroup_emptyScopeRoundTrip(t *testing.T) {
 	name := uniqueName("scope-empty")
 	cfg := providerConfigHCL() + fmt.Sprintf(`
-data "rabbit_role" "viewer" { name = "Domain Viewer" }
 resource "rabbit_group" "g" {
   name  = %q
-  roles = [data.rabbit_role.viewer.id]
+  roles = ["roles/domain.viewer"]
   scope = {
     folders  = []
     projects = []

@@ -20,8 +20,8 @@ Terraform alongside the rest of your cloud infrastructure.
   - [`rabbit_group`](#rabbit_group)
   - [`rabbit_group_member`](#rabbit_group_member)
 - [Data sources](#data-sources)
-  - [`rabbit_role`](#rabbit_role)
   - [`rabbit_group`](#rabbit_group-data-source)
+- [Available roles](#available-roles)
 - [Migrating an existing setup](#migrating-an-existing-setup)
 - [Authoritative vs additive: when to use which resource](#authoritative-vs-additive)
 - [Known limitations](#known-limitations)
@@ -44,13 +44,9 @@ provider "rabbit" {
   domain_id = "acme.com"
 }
 
-data "rabbit_role" "domain_admin" {
-  name = "Domain Admin"
-}
-
 resource "rabbit_group" "platform_admins" {
   name  = "Platform Admins"
-  roles = [data.rabbit_role.domain_admin.id]
+  roles = ["roles/domain.editor"]
 
   principals = [
     { name = "alice@acme.com", principal_type = "EMAIL" },
@@ -150,13 +146,9 @@ Manages a Rabbit group authoritatively — its name, role bindings, GCP
 folder/project scope, and full principal list.
 
 ```hcl
-data "rabbit_role" "domain_admin" {
-  name = "Domain Admin"
-}
-
 resource "rabbit_group" "platform_admins" {
   name  = "Platform Admins"
-  roles = [data.rabbit_role.domain_admin.id]
+  roles = ["roles/domain.editor"]
 
   scope = {
     folders  = ["folders/123456789"]
@@ -164,8 +156,8 @@ resource "rabbit_group" "platform_admins" {
   }
 
   principals = [
-    { name = "alice@acme.com",          principal_type = "EMAIL" },
-    { name = "platform-team@acme.com",  principal_type = "EXTERNAL_GROUP" },
+    { name = "alice@acme.com", principal_type = "EMAIL" },
+    { name = "platform-team@acme.com", principal_type = "EXTERNAL_GROUP" },
     { name = "deploy-sa@acme-prod.iam.gserviceaccount.com", principal_type = "SERVICE_ACCOUNT" },
   ]
 }
@@ -176,7 +168,7 @@ resource "rabbit_group" "platform_admins" {
 | Name | Type | Required | Description |
 |---|---|---|---|
 | `name` | string | yes | Display name for the group. Must be non-empty. |
-| `roles` | set(string) | yes | Role IDs granted by this group (e.g. `"roles/domain.viewer"`). |
+| `roles` | set(string) | yes | Non-empty set of role IDs granted by this group, e.g. `"roles/domain.viewer"`. See [Available roles](#available-roles) for the full list. Each value is validated against the `roles/<namespace>.<name>` shape at plan time. |
 | `principals` | set(object) | yes | Members of the group. See [Principal](#principal-object). |
 | `scope` | object | no | Folder/project scope. Omit for domain-wide. See [Scope](#scope-object). |
 | `domain_id` | string | no | Override the provider's `domain_id`. Forces replacement. |
@@ -268,39 +260,6 @@ terraform import rabbit_group_member.alice acme.com/abcd-1234/EMAIL/alice@acme.c
 
 ## Data sources
 
-### `rabbit_role`
-
-Look up a Rabbit role by id or name.
-
-```hcl
-data "rabbit_role" "viewer" {
-  name = "Domain Viewer"
-}
-
-output "viewer_id" {
-  value = data.rabbit_role.viewer.id   # "roles/domain.viewer"
-}
-```
-
-#### Arguments
-
-| Name | Type | Required | Description |
-|---|---|---|---|
-| `id` | string | one of | Role ID, e.g. `"roles/domain.viewer"`. |
-| `name` | string | one of | Human-readable role name. |
-| `resource_type` | string | no | `BASE` or `DOMAIN`. Defaults to `DOMAIN`. |
-
-Exactly one of `id` or `name` must be set.
-
-#### Attributes
-
-| Name | Type | Description |
-|---|---|---|
-| `id` | string | Resolved role ID. |
-| `name` | string | Resolved role name. |
-| `resource_type` | string | `BASE` or `DOMAIN`. |
-| `description` | string | Server-provided description. |
-
 ### `rabbit_group` (data source)
 
 Look up an existing Rabbit group by id or name.
@@ -331,6 +290,28 @@ output "principals" {
 | `roles` | set(string) | Role IDs granted by the group. |
 | `scope` | object | `folders` and `projects` sets. |
 | `principals` | set(object) | Members; same shape as `rabbit_group.principals`. |
+
+---
+
+## Available roles
+
+The `roles` attribute on `rabbit_group` accepts these role IDs. They're
+stable, customer-assignable identifiers — use them as string literals in
+your Terraform config.
+
+| Role ID | Name | What it grants |
+|---|---|---|
+| `roles/domain.viewer` | Domain Viewer | Read-only access to everything in the domain. |
+| `roles/domain.editor` | Domain Editor | Read/write access to the domain's resources (groups, settings, cost data). |
+| `roles/bigquery.editor` | BigQuery Editor | Edit access scoped to BigQuery within the domain. |
+| `roles/gke.editor` | GKE Editor | Edit access scoped to GKE within the domain. |
+
+`roles/domain.admin` exists but is reserved for Rabbit's built-in domain
+admin group and **cannot be assigned** to user-created groups — the
+backend rejects it. See [Known limitations](#known-limitations).
+
+Additional product-internal roles (`roles/rabbit.*`) exist but aren't
+customer-assignable.
 
 ---
 
@@ -418,9 +399,6 @@ state, so there is nothing to change.
 
 ### Cleanup tips
 
-- Replace literal role IDs (`roles = ["roles/domain.viewer"]`) with
-  `data.rabbit_role.viewer.id` references — better readability, fewer
-  magic strings.
 - Delete `imports.tf` once the first apply succeeds. `import` blocks are
   single-use; leaving them in is harmless but noisy.
 

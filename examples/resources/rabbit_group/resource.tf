@@ -1,10 +1,6 @@
-data "rabbit_role" "domain_admin" {
-  name = "Domain Admin"
-}
-
 resource "rabbit_group" "platform_admins" {
   name  = "Platform Admins"
-  roles = [data.rabbit_role.domain_admin.id]
+  roles = ["roles/domain.editor"]
 
   scope = {
     folders  = ["folders/123456789"]
