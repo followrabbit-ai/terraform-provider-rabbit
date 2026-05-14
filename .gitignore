@@ -1,0 +1,13 @@
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform/
+.terraform.lock.hcl
+terraform-provider-rabbit
+terraform-provider-rabbit_*
+dist/
+.idea/
+.vscode/
+coverage.out
+coverage.html
+.DS_Store
