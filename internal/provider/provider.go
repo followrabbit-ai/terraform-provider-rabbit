@@ -172,7 +172,6 @@ func (p *rabbitProvider) Resources(_ context.Context) []func() resource.Resource
 
 func (p *rabbitProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewRoleDataSource,
 		NewGroupDataSource,
 	}
 }

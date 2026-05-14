@@ -3,8 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -17,6 +19,12 @@ import (
 
 	"github.com/followrabbit-ai/terraform-provider-rabbit/internal/client"
 )
+
+// roleIDPattern is what the Rabbit backend accepts: "roles/<namespace>.<name>"
+// with lower-case letters/digits/underscores in each segment. This catches
+// the obvious typo ("role/domain.viewer", "roles/Domain.Viewer") at plan time
+// rather than at apply.
+var roleIDPattern = regexp.MustCompile(`^roles/[a-z0-9_]+\.[a-z0-9_]+$`)
 
 var _ resource.Resource = (*groupResource)(nil)
 var _ resource.ResourceWithImportState = (*groupResource)(nil)
@@ -111,7 +119,11 @@ func (r *groupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"roles": schema.SetAttribute{
 				Required:    true,
 				ElementType: types.StringType,
-				Description: "Role identifiers (e.g. \"roles/domain.admin\") granted by this group.",
+				Description: "Role identifiers granted by this group, e.g. `\"roles/domain.viewer\"`. See the docs for the full list of available roles.",
+				Validators: []validator.Set{
+					setvalidator.SizeAtLeast(1),
+					setvalidator.ValueStringsAre(stringvalidator.RegexMatches(roleIDPattern, "must look like \"roles/<namespace>.<name>\"")),
+				},
 			},
 			"scope": schema.SingleNestedAttribute{
 				Optional:    true,
