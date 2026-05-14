@@ -8,8 +8,8 @@ terraform {
 }
 
 provider "rabbit" {
-  # Defaults to https://api.followrabbit.ai. Override for dev or self-hosted.
-  # endpoint  = "https://dev.api.followrabbit.ai"
-  # audience  = "532997547160-v5vbdm0abebklbv1kqt445l3unh15p9s.apps.googleusercontent.com"
+  # Defaults target the production Rabbit endpoint and OAuth2 client ID.
+  # Override `endpoint` and `audience` (or RABBIT_ENDPOINT / RABBIT_AUDIENCE
+  # env vars) for non-production environments.
   domain_id = "acme.com"
 }

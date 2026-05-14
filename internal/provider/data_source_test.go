@@ -18,7 +18,7 @@ func TestAccDataGroup_byID(t *testing.T) {
 resource "rabbit_group" "g" {
   name  = %q
   roles = ["roles/domain.viewer"]
-  principals = [{ name = "alice@demo.io", principal_type = "EMAIL" }]
+  principals = [{ name = "alice@example.com", principal_type = "EMAIL" }]
 }
 data "rabbit_group" "read" {
   id = rabbit_group.g.id

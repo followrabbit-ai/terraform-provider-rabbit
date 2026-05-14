@@ -25,7 +25,7 @@ resource "rabbit_group" "g" {
     projects = []
   }
   principals = [
-    { name = "alice@demo.io", principal_type = "EMAIL" },
+    { name = "alice@example.com", principal_type = "EMAIL" },
   ]
 }
 `, name)
@@ -68,11 +68,11 @@ resource "rabbit_group" "g" {
 `, n, princ)
 	}
 	configA := tpl(nameA, `[
-    { name = "alice@demo.io", principal_type = "EMAIL" },
+    { name = "alice@example.com", principal_type = "EMAIL" },
   ]`)
 	configB := tpl(nameB, `[
-    { name = "bob@demo.io",   principal_type = "EMAIL" },
-    { name = "carol@demo.io", principal_type = "EMAIL" },
+    { name = "bob@example.com",   principal_type = "EMAIL" },
+    { name = "carol@example.com", principal_type = "EMAIL" },
   ]`)
 
 	var firstID string
@@ -125,10 +125,10 @@ func TestAccGroup_principalTypes(t *testing.T) {
 		typ  string
 		name string
 	}{
-		{"EMAIL", "alice@demo.io"},
+		{"EMAIL", "alice@example.com"},
 		{"SERVICE_ACCOUNT", "demo-sa@demo.iam.gserviceaccount.com"},
-		{"EXTERNAL_GROUP", "engineering@demo.io"},
-		{"DOMAIN", "demo.io"},
+		{"EXTERNAL_GROUP", "engineering@example.com"},
+		{"DOMAIN", "example.com"},
 		// TRANSITIVE_EMAIL is computed from external-group membership and
 		// is not directly addable by the API. We skip it intentionally; the
 		// schema validator still accepts it for import / drift cases.
@@ -167,7 +167,7 @@ func TestAccGroup_import(t *testing.T) {
 resource "rabbit_group" "g" {
   name  = %q
   roles = ["roles/domain.viewer"]
-  principals = [{ name = "alice@demo.io", principal_type = "EMAIL" }]
+  principals = [{ name = "alice@example.com", principal_type = "EMAIL" }]
 }
 `, name)
 	resource.Test(t, resource.TestCase{
@@ -204,7 +204,7 @@ func TestAccGroup_disappears(t *testing.T) {
 resource "rabbit_group" "g" {
   name  = %q
   roles = ["roles/domain.viewer"]
-  principals = [{ name = "alice@demo.io", principal_type = "EMAIL" }]
+  principals = [{ name = "alice@example.com", principal_type = "EMAIL" }]
 }
 `, name)
 	resource.Test(t, resource.TestCase{
@@ -245,7 +245,7 @@ resource "rabbit_group" "g" {
 // for domain-wide groups).
 //
 // Non-empty scope can only be tested against real ResourceFolder /
-// ResourceProject rows that exist in the dev DB for demo.io (Rabbit's backend
+// ResourceProject rows that exist in the test backend (Rabbit's backend
 // enforces a FK relationship via ResourceService.checkIf*BelongToDomain,
 // which returns 500 on unknown IDs). Those IDs depend on the dev crawler
 // output and aren't stable enough to hardcode in the test suite. Customers
@@ -260,7 +260,7 @@ resource "rabbit_group" "g" {
     folders  = []
     projects = []
   }
-  principals = [{ name = "alice@demo.io", principal_type = "EMAIL" }]
+  principals = [{ name = "alice@example.com", principal_type = "EMAIL" }]
 }
 `, name)
 	resource.Test(t, resource.TestCase{
