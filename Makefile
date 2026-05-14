@@ -3,7 +3,7 @@ VERSION ?= 0.0.1
 OS_ARCH := $(shell go env GOOS)_$(shell go env GOARCH)
 INSTALL_DIR := $(HOME)/.terraform.d/plugins/registry.terraform.io/followrabbit-ai/rabbit/$(VERSION)/$(OS_ARCH)
 
-.PHONY: build install test testacc fmt vet tidy docs clean
+.PHONY: build install import-cli test testacc fmt vet tidy docs clean
 
 build:
 	go build -o $(BINARY) .
@@ -11,6 +11,11 @@ build:
 install: build
 	mkdir -p $(INSTALL_DIR)
 	mv $(BINARY) $(INSTALL_DIR)/$(BINARY)_v$(VERSION)
+
+# Build the rabbit-tf-import companion CLI used to migrate an existing
+# Rabbit setup into Terraform. See docs/MIGRATION.md.
+import-cli:
+	go build -o rabbit-tf-import ./cmd/rabbit-tf-import
 
 tidy:
 	go mod tidy

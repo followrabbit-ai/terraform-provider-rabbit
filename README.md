@@ -67,12 +67,26 @@ resource "rabbit_group_member" "bob" {
 }
 ```
 
+## Migrating an existing setup
+
+If you already manage Rabbit access through the UI, the companion
+`rabbit-tf-import` CLI emits Terraform `import` blocks for every group in a
+domain. Combine it with `terraform plan -generate-config-out` and Terraform
+materialises the HCL for you. See [docs/MIGRATION.md](docs/MIGRATION.md).
+
+```sh
+rabbit-tf-import --domain acme.com > imports.tf
+terraform plan -generate-config-out=generated.tf
+terraform apply        # no-op; state matches reality
+```
+
 ## Development
 
 ```sh
-make build          # compile
+make build          # compile the provider
+make import-cli     # compile the rabbit-tf-import migration helper
 make test           # unit tests
 make testacc        # acceptance tests against a live Rabbit (see Makefile for env)
-make install        # install into ~/.terraform.d/plugins/ for local Terraform
+make install        # install the provider into ~/.terraform.d/plugins/
 make docs           # regenerate docs/ via terraform-plugin-docs
 ```

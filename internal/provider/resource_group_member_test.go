@@ -22,6 +22,7 @@ import (
 // The test guarantees the group's pre-existing principal survives after the
 // member is destroyed.
 func TestAccGroupMember_basic(t *testing.T) {
+	preCheck(t)() // gate before doing any out-of-band setup.
 	groupID, domain, cleanup := setupOutOfBandGroup(t, "gm-basic", []client.Principal{
 		{Name: "alice@demo.io", PrincipalType: client.PrincipalEmail},
 	})
