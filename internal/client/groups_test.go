@@ -26,7 +26,7 @@ func TestCreateGroup_requestShape(t *testing.T) {
 		if r.Method != http.MethodPost {
 			t.Errorf("method=%s want POST", r.Method)
 		}
-		if got, want := r.URL.Path, "/api/v1/domains/demo.io/groups"; got != want {
+		if got, want := r.URL.Path, "/api/v1/domains/example.com/groups"; got != want {
 			t.Errorf("path=%q want %q", got, want)
 		}
 		body, _ := io.ReadAll(r.Body)
@@ -48,7 +48,7 @@ func TestCreateGroup_requestShape(t *testing.T) {
 		},
 		Principals: []Principal{{Name: "alice@x", PrincipalType: PrincipalEmail}},
 	}
-	got, err := c.CreateGroup(context.Background(), "demo.io", in)
+	got, err := c.CreateGroup(context.Background(), "example.com", in)
 	if err != nil {
 		t.Fatalf("CreateGroup: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestGetGroup_404(t *testing.T) {
 	c, _ := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
-	_, err := c.GetGroup(context.Background(), "demo.io", "missing")
+	_, err := c.GetGroup(context.Background(), "example.com", "missing")
 	if !IsNotFound(err) {
 		t.Fatalf("expected NotFound, got %v", err)
 	}
@@ -76,7 +76,7 @@ func TestUpdateGroup_putsFullBody(t *testing.T) {
 		if r.Method != http.MethodPut {
 			t.Errorf("method=%s want PUT", r.Method)
 		}
-		if got, want := r.URL.Path, "/api/v1/domains/demo.io/groups/g1"; got != want {
+		if got, want := r.URL.Path, "/api/v1/domains/example.com/groups/g1"; got != want {
 			t.Errorf("path=%q want %q", got, want)
 		}
 		_ = json.NewDecoder(r.Body).Decode(&seen)
@@ -84,7 +84,7 @@ func TestUpdateGroup_putsFullBody(t *testing.T) {
 		_ = json.NewEncoder(w).Encode(seen)
 	}))
 
-	_, err := c.UpdateGroup(context.Background(), "demo.io", "g1", &Group{
+	_, err := c.UpdateGroup(context.Background(), "example.com", "g1", &Group{
 		Name:       "renamed",
 		Roles:      []Role{{ID: "roles/domain.viewer"}},
 		Principals: []Principal{{Name: "bob@x", PrincipalType: PrincipalEmail}},
@@ -106,7 +106,7 @@ func TestDeleteGroup(t *testing.T) {
 		}
 		w.WriteHeader(http.StatusOK)
 	}))
-	if err := c.DeleteGroup(context.Background(), "demo.io", "g1"); err != nil {
+	if err := c.DeleteGroup(context.Background(), "example.com", "g1"); err != nil {
 		t.Fatalf("DeleteGroup: %v", err)
 	}
 	if !called {
@@ -127,7 +127,7 @@ func TestListGroups_paginates(t *testing.T) {
 		}
 		_ = json.NewEncoder(w).Encode(pages[idx])
 	}))
-	got, err := c.ListGroups(context.Background(), "demo.io")
+	got, err := c.ListGroups(context.Background(), "example.com")
 	if err != nil {
 		t.Fatalf("ListGroups: %v", err)
 	}

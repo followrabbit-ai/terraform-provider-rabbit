@@ -31,14 +31,16 @@ test:
 	go test -race -count=1 ./...
 
 # Acceptance tests against a live Rabbit backend.
-# Requires:
-#   RABBIT_ENDPOINT (e.g. https://dev.api.followrabbit.ai)
-#   RABBIT_AUDIENCE (dev OAuth2 client ID)
-#   RABBIT_TEST_DOMAIN_ID (must be demo.io or aliz.ai)
-#   RABBIT_TEST_IMPERSONATE_SA_EMAIL
-#   RABBIT_TEST_IMPERSONATE_TARGET_EMAIL
+# Requires (all opaque to the suite — driven entirely by env):
+#   RABBIT_ENDPOINT                       e.g. https://api.your-rabbit-host.example
+#   RABBIT_AUDIENCE                       OAuth2 client ID the backend validates
+#   RABBIT_TEST_DOMAIN_ID                 disposable test tenant the suite targets
+#   RABBIT_TEST_ALLOWED_DOMAINS           CSV allow-list; must include the above
+#   RABBIT_TEST_IMPERSONATE_SA_EMAIL      Rabbit impersonation SA (test-only auth)
+#   RABBIT_TEST_IMPERSONATE_TARGET_EMAIL  User the impersonation token acts as
 testacc:
 	@if [ -z "$$RABBIT_TEST_DOMAIN_ID" ]; then echo "RABBIT_TEST_DOMAIN_ID not set"; exit 1; fi
+	@if [ -z "$$RABBIT_TEST_ALLOWED_DOMAINS" ]; then echo "RABBIT_TEST_ALLOWED_DOMAINS not set"; exit 1; fi
 	@if [ -z "$$RABBIT_TEST_IMPERSONATE_SA_EMAIL" ]; then echo "RABBIT_TEST_IMPERSONATE_SA_EMAIL not set"; exit 1; fi
 	@if [ -z "$$RABBIT_TEST_IMPERSONATE_TARGET_EMAIL" ]; then echo "RABBIT_TEST_IMPERSONATE_TARGET_EMAIL not set"; exit 1; fi
 	TF_ACC=1 go test -count=1 -timeout 30m -v ./internal/provider/...

@@ -12,10 +12,13 @@ jobs:
       contents: read
       id-token: write
     env:
-      RABBIT_ENDPOINT: https://dev.api.followrabbit.ai
-      RABBIT_AUDIENCE: 532997547160-v5vbdm0abebklbv1kqt445l3unh15p9s.apps.googleusercontent.com
-      RABBIT_TEST_DOMAIN_ID: demo.io
-      RABBIT_TEST_IMPERSONATE_SA_EMAIL: impersonation@rbt-dev-app-eu.iam.gserviceaccount.com
+      # All Rabbit-specific values come from repository variables / secrets so
+      # nothing about the test tenant is baked into the workflow file.
+      RABBIT_ENDPOINT: ${{ vars.RABBIT_ENDPOINT }}
+      RABBIT_AUDIENCE: ${{ vars.RABBIT_AUDIENCE }}
+      RABBIT_TEST_DOMAIN_ID: ${{ vars.RABBIT_TEST_DOMAIN_ID }}
+      RABBIT_TEST_ALLOWED_DOMAINS: ${{ vars.RABBIT_TEST_ALLOWED_DOMAINS }}
+      RABBIT_TEST_IMPERSONATE_SA_EMAIL: ${{ vars.RABBIT_TEST_IMPERSONATE_SA_EMAIL }}
       RABBIT_TEST_IMPERSONATE_TARGET_EMAIL: ${{ secrets.RABBIT_TEST_IMPERSONATE_TARGET_EMAIL }}
     steps:
       - uses: actions/checkout@v4

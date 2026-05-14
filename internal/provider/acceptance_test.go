@@ -25,13 +25,24 @@ import (
 // -----------------------------------------------------------------------------
 // Safety configuration
 //
-// The acceptance suite refuses to run unless RABBIT_TEST_DOMAIN_ID is one of
-// these. demo.io is the canonical dev test tenant; aliz.ai is the Aliz
-// internal tenant. Adding a customer domain here is a serious incident.
+// The acceptance suite refuses to run unless RABBIT_TEST_DOMAIN_ID matches
+// one of the comma-separated values in RABBIT_TEST_ALLOWED_DOMAINS. This is
+// the last line of defence against accidentally pointing the destructive
+// half of the suite at a tenant that isn't a disposable test environment.
+//
+// Operators are expected to point this only at throwaway test tenants whose
+// state can be modified freely.
 
-var allowedTestDomains = map[string]bool{
-	"demo.io": true,
-	"aliz.ai": true,
+func allowedTestDomains() map[string]bool {
+	raw := os.Getenv("RABBIT_TEST_ALLOWED_DOMAINS")
+	out := map[string]bool{}
+	for _, d := range strings.Split(raw, ",") {
+		d = strings.TrimSpace(d)
+		if d != "" {
+			out[d] = true
+		}
+	}
+	return out
 }
 
 // resourcePrefix is set once in TestMain; every group/principal name the
@@ -60,7 +71,7 @@ func TestMain(m *testing.M) {
 	}
 
 	domain := os.Getenv("RABBIT_TEST_DOMAIN_ID")
-	if !allowedTestDomains[domain] {
+	if !allowedTestDomains()[domain] {
 		fmt.Fprintf(os.Stderr, "RABBIT_TEST_DOMAIN_ID=%q is not in the test allow-list %v\n",
 			domain, allowedTestDomainsList())
 		os.Exit(1)
@@ -122,8 +133,9 @@ func TestMain(m *testing.M) {
 }
 
 func allowedTestDomainsList() []string {
-	out := make([]string, 0, len(allowedTestDomains))
-	for k := range allowedTestDomains {
+	m := allowedTestDomains()
+	out := make([]string, 0, len(m))
+	for k := range m {
 		out = append(out, k)
 	}
 	sort.Strings(out)
@@ -345,7 +357,7 @@ func preCheck(t *testing.T) func() {
 		if os.Getenv("RABBIT_ENDPOINT") == "" {
 			t.Skip("RABBIT_ENDPOINT not set")
 		}
-		if !allowedTestDomains[os.Getenv("RABBIT_TEST_DOMAIN_ID")] {
+		if !allowedTestDomains()[os.Getenv("RABBIT_TEST_DOMAIN_ID")] {
 			t.Skipf("RABBIT_TEST_DOMAIN_ID=%q not in allow-list", os.Getenv("RABBIT_TEST_DOMAIN_ID"))
 		}
 		if os.Getenv("RABBIT_TEST_IMPERSONATE_SA_EMAIL") == "" || os.Getenv("RABBIT_TEST_IMPERSONATE_TARGET_EMAIL") == "" {

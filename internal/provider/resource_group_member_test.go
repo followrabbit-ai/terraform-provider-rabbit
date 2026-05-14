@@ -24,7 +24,7 @@ import (
 func TestAccGroupMember_basic(t *testing.T) {
 	preCheck(t)() // gate before doing any out-of-band setup.
 	groupID, domain, cleanup := setupOutOfBandGroup(t, "gm-basic", []client.Principal{
-		{Name: "alice@demo.io", PrincipalType: client.PrincipalEmail},
+		{Name: "alice@example.com", PrincipalType: client.PrincipalEmail},
 	})
 	t.Cleanup(cleanup)
 
@@ -32,7 +32,7 @@ func TestAccGroupMember_basic(t *testing.T) {
 resource "rabbit_group_member" "extra" {
   domain_id      = %q
   group_id       = %q
-  name           = "bob@demo.io"
+  name           = "bob@example.com"
   principal_type = "EMAIL"
 }
 `, domain, groupID)
@@ -72,16 +72,16 @@ resource "rabbit_group_member" "extra" {
 			{
 				Config: withMember,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("rabbit_group_member.extra", "name", "bob@demo.io"),
+					resource.TestCheckResourceAttr("rabbit_group_member.extra", "name", "bob@example.com"),
 					checkBackendPrincipals(map[string]string{
-						"alice@demo.io": "EMAIL",
-						"bob@demo.io":   "EMAIL",
+						"alice@example.com": "EMAIL",
+						"bob@example.com":   "EMAIL",
 					}),
 				),
 			},
 			{
 				Config: noMember,
-				Check:  checkBackendPrincipals(map[string]string{"alice@demo.io": "EMAIL"}),
+				Check:  checkBackendPrincipals(map[string]string{"alice@example.com": "EMAIL"}),
 			},
 		},
 	})
@@ -137,12 +137,12 @@ resource "rabbit_group" "g" {
   name  = %q
   roles = ["roles/domain.viewer"]
   principals = [
-    { name = "bob@demo.io", principal_type = "EMAIL" },
+    { name = "bob@example.com", principal_type = "EMAIL" },
   ]
 }
 resource "rabbit_group_member" "dup" {
   group_id       = rabbit_group.g.id
-  name           = "bob@demo.io"
+  name           = "bob@example.com"
   principal_type = "EMAIL"
 }
 `, gName)
@@ -162,12 +162,12 @@ resource "rabbit_group_member" "dup" {
 					}
 					count := 0
 					for _, p := range g.Principals {
-						if p.Name == "bob@demo.io" && p.PrincipalType == client.PrincipalEmail {
+						if p.Name == "bob@example.com" && p.PrincipalType == client.PrincipalEmail {
 							count++
 						}
 					}
 					if count != 1 {
-						return fmt.Errorf("expected exactly 1 bob@demo.io, got %d", count)
+						return fmt.Errorf("expected exactly 1 bob@example.com, got %d", count)
 					}
 					return nil
 				},
@@ -183,11 +183,11 @@ func TestAccGroupMember_import(t *testing.T) {
 resource "rabbit_group" "g" {
   name  = %q
   roles = ["roles/domain.viewer"]
-  principals = [{ name = "alice@demo.io", principal_type = "EMAIL" }]
+  principals = [{ name = "alice@example.com", principal_type = "EMAIL" }]
 }
 resource "rabbit_group_member" "m" {
   group_id       = rabbit_group.g.id
-  name           = "alice@demo.io"
+  name           = "alice@example.com"
   principal_type = "EMAIL"
 }
 `, gName)
