@@ -76,14 +76,12 @@ func scopeAttrTypes() map[string]attr.Type {
 }
 
 type principalModel struct {
-	ID            types.String `tfsdk:"id"`
 	Name          types.String `tfsdk:"name"`
 	PrincipalType types.String `tfsdk:"principal_type"`
 }
 
 func principalAttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"id":             types.StringType,
 		"name":           types.StringType,
 		"principal_type": types.StringType,
 	}
@@ -149,10 +147,6 @@ func (r *groupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Description: "Members of the group.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Computed:    true,
-							Description: "Server-assigned principal id (stable across updates).",
-						},
 						"name": schema.StringAttribute{
 							Required:    true,
 							Description: "Principal name (email, SA email, group email, or domain).",

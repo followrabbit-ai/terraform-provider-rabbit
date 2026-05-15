@@ -87,7 +87,6 @@ func (d *groupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id":             schema.StringAttribute{Computed: true},
 						"name":           schema.StringAttribute{Computed: true},
 						"principal_type": schema.StringAttribute{Computed: true},
 					},

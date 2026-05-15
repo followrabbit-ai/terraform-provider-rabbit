@@ -103,7 +103,6 @@ func setStateFromGroup(ctx context.Context, state *tfsdk.State, g *client.Group,
 	principalObjs := make([]attr.Value, 0, len(g.Principals))
 	for _, p := range g.Principals {
 		obj, d := types.ObjectValue(principalAttrTypes(), map[string]attr.Value{
-			"id":             types.StringValue(p.ID),
 			"name":           types.StringValue(p.Name),
 			"principal_type": types.StringValue(string(p.PrincipalType)),
 		})
@@ -159,7 +158,6 @@ func setDataSourceGroupState(ctx context.Context, state *tfsdk.State, g *client.
 	principalObjs := make([]attr.Value, 0, len(g.Principals))
 	for _, p := range g.Principals {
 		obj, d := types.ObjectValue(principalAttrTypes(), map[string]attr.Value{
-			"id":             types.StringValue(p.ID),
 			"name":           types.StringValue(p.Name),
 			"principal_type": types.StringValue(string(p.PrincipalType)),
 		})
