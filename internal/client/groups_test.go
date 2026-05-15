@@ -97,6 +97,49 @@ func TestUpdateGroup_putsFullBody(t *testing.T) {
 	}
 }
 
+// TestUpdateGroup_stripsDomainAdminRole verifies that the client mirrors the
+// frontend trick from FlyoverContent.tsx: roles/domain.admin is filtered out
+// of the PUT body so the backend's validateDomainAdminRole accepts the
+// request. Without this, principal updates to the built-in Domain admins
+// group would always 4xx.
+func TestUpdateGroup_stripsDomainAdminRole(t *testing.T) {
+	var requestRoles []Role
+	c, _ := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req Group
+		_ = json.NewDecoder(r.Body).Decode(&req)
+		requestRoles = req.Roles
+		// Simulate the backend's isDomainAdminGroup branch: reflect the
+		// original role back even though the request didn't include it.
+		resp := req
+		resp.ID = "domain_admin_group_example.com"
+		resp.Roles = []Role{{ID: "roles/domain.admin", Name: "Domain Admin"}}
+		_ = json.NewEncoder(w).Encode(resp)
+	}))
+	in := &Group{
+		Name:  "Domain admins",
+		Roles: []Role{{ID: "roles/domain.admin"}},
+		Principals: []Principal{
+			{Name: "alice@example.com", PrincipalType: PrincipalEmail},
+			{Name: "bob@example.com", PrincipalType: PrincipalEmail},
+		},
+	}
+	got, err := c.UpdateGroup(context.Background(), "example.com", "domain_admin_group_example.com", in)
+	if err != nil {
+		t.Fatalf("UpdateGroup: %v", err)
+	}
+	for _, r := range requestRoles {
+		if r.ID == "roles/domain.admin" {
+			t.Fatalf("PUT body still contained roles/domain.admin: %+v", requestRoles)
+		}
+	}
+	if !hasRole(in.Roles, "roles/domain.admin") {
+		t.Errorf("caller's input Roles was mutated; expected to keep roles/domain.admin")
+	}
+	if !hasRole(got.Roles, "roles/domain.admin") {
+		t.Errorf("returned group lost roles/domain.admin: %+v", got.Roles)
+	}
+}
+
 func TestDeleteGroup(t *testing.T) {
 	called := false
 	c, _ := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
