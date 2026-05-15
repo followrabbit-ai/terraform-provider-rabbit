@@ -435,11 +435,30 @@ Choose:
 
 ## Known limitations
 
-### Domain admin role
+### Domain admin role and the built-in admin group
 
 `roles/domain.admin` cannot be assigned to user-created groups; it is
-reserved for Rabbit's built-in domain admin group. Attempts to assign it
-are rejected by the backend.
+reserved for Rabbit's built-in **Domain admins** group. Attempts to
+assign it are rejected by the backend.
+
+The Domain admins group itself can be imported with `rabbit_group` and
+its **principal list managed through Terraform like any other group**
+— add or remove members in the `principals` block and `terraform
+apply`. The other fields are fixed: any attempt to rename it, change
+its roles, or change its scope from Terraform will produce a clear
+error from the backend listing the offending fields. In practice that
+means declaring the resource with the existing values for those fields:
+
+```hcl
+resource "rabbit_group" "domain_admins" {
+  name  = "Domain admins"                # immutable, must match reality
+  roles = ["roles/domain.admin"]         # immutable, must match reality
+  principals = [
+    { name = "alice@acme.com", principal_type = "EMAIL" },
+    { name = "bob@acme.com",   principal_type = "EMAIL" },
+  ]
+}
+```
 
 ### Folder/project scope IDs must be known to Rabbit
 
