@@ -3,8 +3,8 @@ resource "rabbit_group" "platform_admins" {
   roles = ["roles/domain.editor"]
 
   scope = {
-    folders  = ["folders/123456789"]
-    projects = ["projects/acme-prod"]
+    folders  = ["123456789"] # bare GCP folder id, no "folders/" prefix
+    projects = ["acme-prod"] # bare GCP project id, no "projects/" prefix
   }
 
   principals = [

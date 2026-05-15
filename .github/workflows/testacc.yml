@@ -1,9 +1,19 @@
 name: testacc
 
+# Acceptance suite — drives the provider against the live dev Rabbit backend.
+# Triggers:
+#   * push to master (catches behaviour regressions before any consumer can
+#     terraform init the next release).
+#   * workflow_dispatch (on-demand, e.g. before cutting a release).
+#
+# Auth: WIF_PROVIDER + WIF_SERVICE_ACCOUNT secrets (set up by
+# followrabbit-ai/gcp-foundation org_core/terraform_provider_rabbit_testacc_cicd.tf)
+# plus RABBIT_TEST_IMPERSONATE_TARGET_EMAIL secret naming a seeded admin user
+# on the test tenant, plus the RABBIT_* repo variables.
 on:
+  push:
+    branches: [master]
   workflow_dispatch:
-  schedule:
-    - cron: '0 4 * * *'
 
 jobs:
   acc:
@@ -12,8 +22,6 @@ jobs:
       contents: read
       id-token: write
     env:
-      # All Rabbit-specific values come from repository variables / secrets so
-      # nothing about the test tenant is baked into the workflow file.
       RABBIT_ENDPOINT: ${{ vars.RABBIT_ENDPOINT }}
       RABBIT_AUDIENCE: ${{ vars.RABBIT_AUDIENCE }}
       RABBIT_TEST_DOMAIN_ID: ${{ vars.RABBIT_TEST_DOMAIN_ID }}
