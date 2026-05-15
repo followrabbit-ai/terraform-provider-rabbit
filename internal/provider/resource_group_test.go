@@ -180,7 +180,7 @@ resource "rabbit_group" "g" {
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateIdFunc:                    importIDForGroup("rabbit_group.g"),
-				ImportStateVerifyIgnore:              []string{"principals"}, // id field on nested object is server-side
+				ImportStateVerifyIgnore:              []string{},
 			},
 		},
 	})
